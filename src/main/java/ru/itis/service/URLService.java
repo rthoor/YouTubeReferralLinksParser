@@ -19,28 +19,28 @@ public class URLService {
     private static final String REFERRER = "https://www.google.com";
     private static List<String> exclusions =
             Arrays.asList("vk.com", "instagram.com", "youtube.com", "t.me", "twitter.com", "facebook.com",
-                    "apple.com", "google.com", "tiktok.com", "youtu.be", "twitch.tv", "teleg.run", "bit.ly");
+                    "apple.com", "google.com", "tiktok.com", "youtu.be", "twitch.tv", "teleg.run", "bit.ly",
+                    "taplink.cc", "beclick.cc", "clck.ru", "tinyurl.com", "is.gd", "cli.co", "onelink.me",
+                    "goo.gl", "tglink.ru", "clc.to", "httpslink.com");
 
-    public static Company getCompanyByUrl(URL url){
+    public Company getCompanyByUrl(URL url){
         try {
             HttpURLConnection connection = (HttpURLConnection)url.openConnection();
             connection.setRequestMethod("GET");
             connection.addRequestProperty("user-agent", USER_AGENT);
-            connection.setConnectTimeout(60000);
             connection.connect();
-            if(connection.getResponseCode()==200){
-                String host = connection.getURL().getHost();
-                if(!isExclusion(host)){
-                    return new Company(getTopDomain(host));
-                }
+            Thread.sleep(30000);
+            String host = connection.getURL().getHost();
+            if(!isExclusion(host)){
+                return new Company(getTopDomain(host));
             }
             return null;
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             return null;
         }
     }
 
-    private static boolean isExclusion(String host){
+    private boolean isExclusion(String host){
         for(String site : exclusions){
             if(host.toLowerCase().contains(site.toLowerCase())){
                 return true;
@@ -49,7 +49,7 @@ public class URLService {
         return false;
     }
 
-    private static String getTopDomain(String urlString) {
+    private String getTopDomain(String urlString) {
         int lastDot = urlString.lastIndexOf('.');
         String zerolvl = urlString.substring(lastDot, urlString.length());
         urlString = urlString.substring(0, lastDot);
@@ -58,11 +58,12 @@ public class URLService {
         return firstlvl + zerolvl;
     }
 
-    public static void setSiteOwner(Company company){
+    public void setSiteOwner(Company company){
         try {
             Document doc = Jsoup.connect(WHOIS + company.getSite())
                     .userAgent(USER_AGENT)
                     .referrer(REFERRER)
+                    .timeout(30000)
                     .get();
             Elements rows = doc.getElementsByClass("df-row");
             HashMap<String, String> map = new HashMap<>();
@@ -82,11 +83,13 @@ public class URLService {
         }
     }
 
-    public static void setSiteTitle(Company company){
+    public void setSiteTitle(Company company){
         try {
             Document doc = Jsoup.connect(PROTOCOL + company.getSite())
                     .userAgent(USER_AGENT)
                     .referrer(REFERRER)
+                    .timeout(60000)
+                    .followRedirects(true)
                     .get();
             company.setTitle(doc.title());
         } catch (IOException e) {

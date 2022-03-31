@@ -11,13 +11,14 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 public class Main {
+    private static final YoutubeConnectService ycs = new YoutubeConnectService();
+    private static final URLService us = new URLService();
 
     public static void main(String[] args){
-        YoutubeConnectService ycs = new YoutubeConnectService();
         ArrayList<String> videoIds = new ArrayList<>();
 
         //здесь вставить айди канала (именно тот, что ютуб присваивает, а не сам пользователь)
-        String channelId = "UCpTuLPXfIOcsPbvb2SIwD8w";
+        String channelId = "";
         try {
             videoIds = ycs.getVideosIds(channelId, "null");
         } catch (IOException e) {
@@ -93,8 +94,8 @@ public class Main {
 
         @Override
         public void run() {
-            URLService.setSiteTitle(company);
-            URLService.setSiteOwner(company);
+            us.setSiteTitle(company);
+            us.setSiteOwner(company);
         }
     }
 
@@ -132,7 +133,7 @@ public class Main {
 
             @Override
             public void run() {
-                Company company = URLService.getCompanyByUrl(url);
+                Company company = us.getCompanyByUrl(url);
                 if(company != null) {
                     if (sites.containsKey(company)) {
                         sites.put(company, sites.get(company) + 1);
